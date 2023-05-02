@@ -10,7 +10,8 @@
         }
 
         input[type="number"] {
-            width: 100px;
+            width: 100%;
+            max-width: 300px; /* limit width for larger screens */
             padding: 5px;
             font-size: 16px;
             text-align: center;
@@ -24,6 +25,8 @@
         table {
             border-collapse: collapse;
             margin: 20px auto;
+            width: 100%;
+            max-width: 600px; /* limit width for larger screens */
         }
 
         th,
@@ -44,6 +47,17 @@
             color: white;
             font-size: 16px;
             cursor: pointer;
+        }
+
+        /* media queries for smaller screens */
+        @media (max-width: 600px) {
+            input[type="number"] {
+                max-width: none;
+            }
+
+            table {
+                max-width: 100%;
+            }
         }
     </style>
     <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
