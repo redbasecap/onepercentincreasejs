@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>1% Calculator</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            text-align: center;
+        }
+
+        input[type="number"] {
+            width: 100px;
+            padding: 5px;
+            font-size: 16px;
+            text-align: center;
+            border-radius: 5px;
+            border: none;
+            background-color: #f7f7f7;
+            margin-right: 10px;
+            margin-bottom: 20px;
+        }
+
+        table {
+            border-collapse: collapse;
+            margin: 20px auto;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        button {
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+    <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+</head>
+
+<body>
+    <h1 id="mainTitle">The 1% increase Calculator</h1>
+    <br>
+    <div>
+        <label id="languageLabel" for="language">Choose a language:</label>
+        <select id="language" name="language">
+
+            <option value="de">Deutsch</option>
+            <option value="en">English</option>
+        </select>
+    </div>
+
+    <br>
+    <div>
+        <label id="typeLabel" for="type">Choose a unit:</label>
+        <select id="type" name="type">
+            <option value="distance">Distance (km)</option>
+            <option value="money">Money ($)</option>
+            <option value="pushups">Pushups</option>
+            <option value="General">General</option>
+        </select>
+    </div>
+    <br>
+    <label id="quantityLabel" for="quantity">Enter your current:</label>
+    <input type="number" id="quantity" name="quantity" min="1" required>
+    <br>
+    <button onclick="exportToExcel()">Export to Excel</button>
+    <br>
+    <table>
+        <caption></caption>
+        <tr>
+            <th id="dayHeader"></th>
+            <th id="dateHeader"></th>
+            <th id="quantityHeader"></th>
+        </tr>
+    </table>
+
+    <script>
+        const quantityInput = document.getElementById("quantity");
+        const table = document.querySelector("table");
+        const dayHeader = document.getElementById("dayHeader");
+        const dateHeader = document.getElementById("dateHeader");
+        const quantityHeader = document.getElementById("quantityHeader");
+        const languageSelect = document.getElementById("language");
+        const typeSelect = document.getElementById("type");
+        const mainTitle = document.getElementById("mainTitle");
+        const languageLabel = document.getElementById("languageLabel");
+        const typeLabel = document.getElementById("typeLabel");
+        const quantityLabel = document.getElementById("quantityLabel");
+
+        function getCurrencySymbol() {
+            if (languageSelect.value === "de" && typeSelect.value === "money") {
+                return "CHF";
+            } else if (typeSelect.value === "money") {
+                return "$";
+            } else {
+                return "";
+            }
+        }
+
+        function calculateQuantity() {
+            // Clear the table rows except for the header row
+            const numRows = table.rows.length;
+            for (let i = numRows - 1; i > 0; i--) {
+                table.deleteRow(i);
+            }
+
+            const quantity = quantityInput.value;
+            let runningQuantity = quantity;
+
+            for (let i = 1; i <= 365; i++) {
+                const increase = (runningQuantity * 0.01).toFixed(2);
+                runningQuantity = (+runningQuantity + +increase).toFixed(2);
+
+                const row = table.insertRow();
+                const dayNumberCell = row.insertCell(0);
+                const dateCell = row.insertCell(1);
+                const quantityCell = row.insertCell(2);
+                const date = new Date(2023, 0, i);
+                const options = { day: 'numeric', month: 'long', year: 'numeric' };
+                const formattedDate = date.toLocaleDateString(languageSelect.value, options);
+
+                dayNumberCell.textContent = `${i}`;
+                dateCell.textContent = formattedDate;
+                quantityCell.textContent = `${runningQuantity} ${getCurrencySymbol()}`;
+            }
+        }
+
+        function updateTableHeaders() {
+            dayHeader.textContent = languageSelect.value === "en" ? "Day" : "Tag";
+            dateHeader.textContent = languageSelect.value === "en" ? "Date" : "Datum";
+            quantityHeader.textContent = typeSelect.options[typeSelect.selectedIndex].text;
+        }
+
+        function translateTexts() {
+            mainTitle.textContent = languageSelect.value === "en" ? "The 1% increase Calculator" : "Der 1% Zuwachsrechner";
+            languageLabel.textContent = languageSelect.value === "en" ? "Choose a language:" : "Wählen Sie eine Sprache:";
+            typeLabel.textContent = languageSelect.value === "en" ? "Choose a unit:" : "Wählen Sie eine Einheit:";
+            quantityLabel.textContent = languageSelect.value === "en" ? "Enter your current:" : "Geben Sie Ihren aktuellen Wert ein:";
+        }
+
+        function exportToExcel() {
+            // Create a new Workbook
+            var wb = XLSX.utils.book_new();
+
+            // Convert the table to a worksheet
+            var ws = XLSX.utils.table_to_sheet(table);
+
+            // Add the worksheet to the Workbook
+            XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+
+            // Save the Workbook as an Excel file
+            XLSX.writeFile(wb, "1-percent-calculator.xlsx");
+        }
+
+        quantityInput.addEventListener("input", () => {
+            calculateQuantity();
+        });
+
+        languageSelect.addEventListener("change", () => {
+            translateTexts();
+            updateTableHeaders();
+            calculateQuantity();
+        });
+
+        typeSelect.addEventListener("change", () => {
+            updateTableHeaders();
+            calculateQuantity();
+        });
+
+        // Initialize the table
+        translateTexts();
+        updateTableHeaders();
+        calculateQuantity();
+    </script>
+</body>
+
+</html>
